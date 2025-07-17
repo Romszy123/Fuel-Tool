@@ -72,3 +72,22 @@ Notes
 License
 
 This tool is for educational and exploratory purposes. No warranty provided for commercial use.
+
+
+Currently designed to be used on Fly.io as a webapp. To run locally:
+
+Replace:if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 8080))
+    app.run(
+        host="0.0.0.0",
+        port=port,
+        debug=False
+        
+    )
+
+  With: if __name__ == "__main__":
+    app.run(                       
+        host="0.0.0.0",
+        port=int(os.environ.get("PORT", 8080)),
+        debug=True                
+    )
