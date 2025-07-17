@@ -45,7 +45,7 @@ Simulation Assumptions
 Use as deploy to Fly.io
 
 1. Install fly dependencies
-2. Navigate to folder containing .py file and Fly.fmol file.
+2. Navigate to folder containing .py file and Fly.toml file.
 3. 'fly deploy' in shell. 
 
  Output Explanation
