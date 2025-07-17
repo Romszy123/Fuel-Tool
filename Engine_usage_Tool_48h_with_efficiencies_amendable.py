@@ -5,7 +5,7 @@ from dash import dcc, html
 from dash.dependencies import Input, Output, State
 
 ##############################
-# Device Classes
+Device Classes
 ##############################
 
 class DieselGenerator:
@@ -78,7 +78,7 @@ class Battery:
         return used
 
 ##############################
-# 48-Hour Simulation
+48-Hour Simulation
 ##############################
 
 def create_irr_schedule(sunrise, sunset, peak=1.0):
@@ -96,7 +96,7 @@ def create_irr_schedule(sunrise, sunset, peak=1.0):
 def run_sim_integration(
     battery,
     solar_obj,
-    fuel_eta,          #  kWh / L  ➜  {'m1':…, 'm2':…, 'dg1':…, 'dg2':…}
+    fuel_eta,          #  kWh / L  ->  {'m1':…, 'm2':…, 'dg1':…, 'dg2':…}
     path_eta,          #  path efficiencies editable in UI
     devices,
     usage_blocks,
@@ -105,7 +105,7 @@ def run_sim_integration(
     prop_loads,
     irr_schedule
 ):
-    # ── unpack path-efficiency dictionary once for speed/readability ──────────
+    # unpack path-efficiency dictionary once for speed/readability
     m_direct = path_eta['m_direct']      # Motor ➜ own prop (normally 1.0)
     m_grid   = path_eta['m_grid']        # Motor ➜ grid (0.95)
     cross    = path_eta['m_cross']       # Motor cross-feed (0.9025 default)
@@ -127,7 +127,7 @@ def run_sim_integration(
         irr       = irr_schedule[hour]
         solar_kW  = solar_obj.generate_power(irr)
 
-        # ── 1. subtract solar from hotel › aux › prop ─────────────────────────
+        # 1. subtract solar from hotel › aux › prop
         used_h    = min(hotel_load, solar_kW)
         s_left    = solar_kW - used_h
         left_h    = hotel_load - used_h
@@ -155,7 +155,7 @@ def run_sim_integration(
         dg2_on    = devices['DG2'   ]['is_on']
 
 
-        # ── Propulsion need split 50 / 50 ─────────────────────────────────────
+        # Propulsion need split 50 / 50 
         need_p1   = prop_load * 0.5
         need_p2   = prop_load * 0.5
 
@@ -182,7 +182,7 @@ def run_sim_integration(
         rem_p2 = need_p2 - p2_supplied
         grid_prop_demand = (rem_p1 + rem_p2) / g2p if (rem_p1 + rem_p2) > 0 else 0
 
-        # ── grid producers (corrected) ────────────────────────────────────────
+        # grid producers (corrected)
         # Calculate raw input power to grid and corresponding output (after efficiency losses)
 
         # Motors
@@ -205,7 +205,7 @@ def run_sim_integration(
         total_grid = m1_grid_out + m2_grid_out + dg1_grid_out + dg2_grid_out
 
 
-        # ── allocate grid power Hotel/Aux first, then Propulsion ─────────────
+        # allocate grid power Hotel/Aux first, then Propulsion
         need_HA = left_h + left_a
         used_HA = min(total_grid, need_HA)
         grid_left = total_grid - used_HA
@@ -218,13 +218,13 @@ def run_sim_integration(
             batt_out  = battery.discharge(unmet_grid)
             unmet_grid -= batt_out
 
-        # ── battery charging with any surplus grid + leftover solar ────────
+        #battery charging with any surplus grid + leftover solar
         surplus_grid = (grid_left - used_prop) + s_left
         charged = battery.charge(surplus_grid) if surplus_grid > 0 else 0.0
         #Calculate the excess supply 
         excess = max(0.0, surplus_grid - charged)
 
-        # ── Fuel bookkeeping ─────────────────────────────────────────────────
+        #Fuel bookkeeping
         m1_fuel = m2_fuel = dg1_fuel = dg2_fuel = 0.0
         if m1_on:
             m1_fuel = devices['Motor1']['obj'].fuel_consumed(
@@ -251,7 +251,7 @@ def run_sim_integration(
 
         total_fuel = m1_fuel + m2_fuel + dg1_fuel + dg2_fuel
 
-        # ── collect hour record ──────────────────────────────────────────────
+        # collect hour record
         hourly_data.append({
             'hour'            : hour,
             'solar_kW'        : solar_kW,
@@ -329,7 +329,7 @@ app.layout = html.Div([
         src='/assets/efficiencies_diagram.png',
         style={'width': '80%', 'maxWidth': '800px', 'margin': '20px auto', 'display': 'block'}
     ),
-#  EFFICIENCY CONTROLS  ───────────────────────────────────
+#  EFFICIENCY CONTROLS
     html.H2("Efficiencies"),
     html.Div(
             # grid with two columns: one for labels, one for inputs
@@ -371,7 +371,7 @@ app.layout = html.Div([
                 'margin': '10px'
             }
         ),
-# ───────────────────────────────────────────────────────────
+
 
     dcc.Store(id='store-hourly'),
 
@@ -524,7 +524,7 @@ app.layout = html.Div([
                 'margin': '10px'})
 ])
 ##############################
-# MAIN CALLBACK
+MAIN CALLBACK
 ##############################
 @app.callback(
     [
@@ -576,33 +576,33 @@ def run_integration_calc(
     bc, bmin, binit,
     sarea, seff, srise, sset,
 
-    # ─── Motor-1 block ───
+    # Motor-1 block
     m1on, m1p, m1eff,
     m1b0, m1b1, m1b2, m1b3, m1b4, m1b5, m1b6, m1b7, m1b8, m1b9, m1b10, m1b11,
 
-    # ─── Motor-2 block ───
+    # Motor-2 block
     m2on, m2p, m2eff,
     m2b0, m2b1, m2b2, m2b3, m2b4, m2b5, m2b6, m2b7, m2b8, m2b9, m2b10, m2b11,
 
-    # ─── DG-1 block ───
+    # DG-1 block
     dg1on, dg1p, dg1eff,
     dg1b0, dg1b1, dg1b2, dg1b3, dg1b4, dg1b5, dg1b6, dg1b7, dg1b8, dg1b9, dg1b10, dg1b11,
 
-    # ─── DG-2 block ───
+    # DG-2 block
     dg2on, dg2p, dg2eff,
     dg2b0, dg2b1, dg2b2, dg2b3, dg2b4, dg2b5, dg2b6, dg2b7, dg2b8, dg2b9, dg2b10, dg2b11,
 
-    # ─── loads ───
+    # loads
     hotel_b0, hotel_b1, hotel_b2, hotel_b3, hotel_b4, hotel_b5, hotel_b6, hotel_b7, hotel_b8, hotel_b9, hotel_b10, hotel_b11,
     aux_b0, aux_b1, aux_b2, aux_b3, aux_b4, aux_b5, aux_b6, aux_b7, aux_b8, aux_b9, aux_b10, aux_b11,
     prop_b0, prop_b1, prop_b2, prop_b3, prop_b4, prop_b5, prop_b6, prop_b7, prop_b8, prop_b9, prop_b10, prop_b11,
 
 
-    # ─── editable efficiencies ───
+    # editable efficiencies
     m_direct_eff, m_grid_eff, m_cross_eff,
     dg_grid_eff, batt_charge_eff, batt_discharge_eff, grid_prop_eff,
 
-    # ____ Motor-Grid_Max______
+    # Motor-Grid_Max
     m1_max_grid, m2_max_grid,
 ):
     m1b = [m1b0, m1b1, m1b2, m1b3, m1b4, m1b5, m1b6, m1b7, m1b8, m1b9, m1b10, m1b11]
@@ -612,15 +612,15 @@ def run_integration_calc(
     
     
 
-    # -------- small helper ----------
+    
     f = lambda v, d: float(v) if v not in (None,'') else d
     
-    #------Loads-----
+    #Loads
     hotel_loads = [f(x,190) for x in [hotel_b0, hotel_b1, hotel_b2, hotel_b3, hotel_b4, hotel_b5, hotel_b6, hotel_b7, hotel_b8, hotel_b9, hotel_b10, hotel_b11]]
     aux_loads   = [f(x,30) for x in [aux_b0, aux_b1, aux_b2, aux_b3, aux_b4, aux_b5, aux_b6, aux_b7, aux_b8, aux_b9, aux_b10, aux_b11]]
     prop_loads  = [f(x,900) for x in [prop_b0, prop_b1, prop_b2, prop_b3, prop_b4, prop_b5, prop_b6, prop_b7, prop_b8, prop_b9, prop_b10, prop_b11]]
 
-    # -------- objects ---------------
+    # objects
     battery = Battery(
         f(bc,5000), f(bmin,500), f(binit,2500),
         charge_eff    = f(batt_charge_eff,1.0),
@@ -677,7 +677,7 @@ def run_integration_calc(
         irr
     )
 
-    # -------- simple plotting --------
+    # simple plotting 
     hrs   = [r['hour'] for r in hourly]
     soc   = [r['end_batt_soc'] for r in hourly]
     fuel  = [r['fuel_used']     for r in hourly]
@@ -690,7 +690,7 @@ def run_integration_calc(
 
     return fig_batt, fig_fuel, hourly, f"Total fuel 48 h: {tot_f:.2f} L"
 ##############################
-# CLICK CALLBACK
+CLICK CALLBACK
 ##############################
 @app.callback(
     Output('click-details','children'),
