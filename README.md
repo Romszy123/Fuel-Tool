@@ -26,7 +26,7 @@ Simulation Assumptions
 - Load Order: Solar energy is first used for Hotel, then Aux, then Propulsion.
 - Unmet Loads: If all power sources (including battery) are insufficient, unmet demand is recorded.
 
- How to Use
+ How to Use as local host:
 
 1. Install requirements detailed in requirements.txt
 
@@ -42,7 +42,11 @@ Simulation Assumptions
    - Visualizations update automatically.
    - Click the battery graph to view hourly details.
 
+Use as deploy to Fly.io
 
+1. Install fly dependencies
+2. Navigate to folder containing .py file and Fly.fmol file.
+3. 'fly deploy' in shell. 
 
  Output Explanation
 
@@ -74,7 +78,12 @@ License
 This tool is for educational and exploratory purposes. No warranty provided for commercial use.
 
 
-Currently designed to be used on Fly.io as a webapp. To run locally:
+Currently designed to be used on Fly.io as a webapp. Navigate to folder 
+
+
+
+
+To run locally:
 
 Replace:if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
